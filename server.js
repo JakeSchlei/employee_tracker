@@ -10,28 +10,14 @@ const connection = mysql.createConnection({
 });
 
 connection.connect(err => {
-    if(err) throw err;
+    if (err) throw err;
     welcomeMessage();
 });
 
-const style1 = [
-  'color: powderBlue',
-  'text-shadow: 2px 2px purple', 
-  'background: plum', 
-  'font-size: 3em',
-  'border: 1px solid purple',
-  'padding: 20px',
-  'font-family: fantasy'
-].join(';');
-
 welcomeMessage = () => {
-    console.log('%cEmployee Tracker!', style1);
+    console.log('Employee Tracker!');
     promptUser();
 };
-
-
-
-
 
 const promptUser = () => {
     inquirer.prompt ([
@@ -57,3 +43,11 @@ const promptUser = () => {
         }
     })
 }
+
+ showEmployees = () => {
+    connection.promise().query('SELECT * FROM employee')
+    .then (([rows, fields]) => {
+        console.table(rows);
+    }).catch(console.log)
+    promptUser();
+};
