@@ -148,12 +148,70 @@ const updateEmpRole = function(employeeArray,rolesArray) {
         const input = [answers.role, answers.employee];
         connection.promise().query(sql, input)
         .then( () => {
-            console.log("EMPLOYEE INFORMATION UPDATED!!")
+            console.log("EMPLOYEE INFORMATION UPDATED!!");
+            promptUser();
         })
-        .then (promptUser)
-        .catch(console.log());
+      
     })
 }
+
+// Add Role
+const addRole = function(departmentArray) {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'title',
+            message: 'What is the name of the new role?'
+        },
+        {
+            type: 'input',
+            name: 'salary',
+            message: 'What will the salary be for this role?'
+        },
+        {
+            type: 'list',
+            name: 'department',
+            message: 'What department will this new role belong to?',
+            choices: departmentArray
+        }
+    ])
+    .then(answers => {
+        const sql = `INSERT INTO emp_role (title, salary, dept_id)
+                    VALUES (?, ?,(SELECT id FROM department WHERE dept_name = ?))`;
+        const input = [answers.title, answers.salary, answers.department];
+        connection.promise().query(sql, input)
+        .then( () => {
+            console.log('NEW ROLE ADDED!!');
+            promptUser();
+        })
+    })
+    
+
+   
+}
+
+// Add Department 
+const addDepartment = function() {
+    inquirer.prompt ([
+        {
+            type: 'input',
+            name: 'dept_name',
+            message: 'What is the name of the new department?'
+        }
+    ])
+    .then(answer => {
+        const sql = `INSERT INTO department (dept_name)
+                    VALUES (?)`;
+        const input = [answer.dept_name];  
+        connection.promise().query(sql, input)
+        .then( () => {
+            console.log('NEW DEPARTMENT ADDED!!');
+            promptUser();
+        }) 
+
+    })
+   
+};
 
 // Questions Section
 const promptUser = () => {
@@ -227,6 +285,24 @@ const promptUser = () => {
             }
         }))
         .then(employeeArray => updateEmpRole(employeeArray,rolesArray))
+      }
+      if (choices === "Add Role") {
+        let departmentArray = [];
+        connection.promise().query(`SELECT dept_name FROM department`)
+        .then(([rows, fields]) => {
+            for (let i = 0; i < rows.length; i++) {
+                departmentArray.push(rows[i].dept_name)
+            }
+            return departmentArray;
+        })
+        .then(departmentArray => addRole(departmentArray));
+      }
+      if (choices === "Add Department") {
+        addDepartment();
+      }
+      if (choices === "Exit") {
+        console.log('BYE!')
+        process.exit();
       }
     });
 };
